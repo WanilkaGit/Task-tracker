@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Система управління завданнями</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'tasks:task-list' %}">Головна</a>
+        <a class="navbar-brand" href="{% url 'tasks:register' %}">Реєстрація</a>
+        <form action="{% url 'tasks:logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit">Вихід</button>
+        </form>
+    </nav>
+
+    {% block content %}
+    {% endblock %}
+</body>
+</html>

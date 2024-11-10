@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-3">
+    <h2>Ви впевнені, що хочете видалити цей коментар?</h2>
+    <form action="" method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Видалити</button>
+        <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">Відміна</a>
+    </form>
+</div>
+{% endblock %}

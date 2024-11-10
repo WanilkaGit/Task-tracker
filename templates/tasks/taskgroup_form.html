@@ -1,0 +1,16 @@
+<!-- templates/tasks/taskgroup_form.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Create Task Group</h2>
+<form method="post">
+    {% csrf_token %}
+    <label for="group-title">Title:</label>
+    <input type="text" id="group-title" name="group-title" required>
+    <br>
+    <label for="group-description">Description:</label>
+    <textarea id="group-description" name="group-description" required></textarea>
+    <br>
+    <button type="submit">Save</button>
+</form>
+{% endblock %}

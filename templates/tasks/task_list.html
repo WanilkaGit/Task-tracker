@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% csrf_token %}
+<div>
+    <h2>Список завдань</h2>
+    <a href="{% url 'tasks:task-create' %}">Додати завдання</a>
+
+    {% for group in groups %}
+    <div>
+        <div>
+            <p>{{ group.title }}</p>
+            <!-- Плюсик для додавання задачі до групи -->
+            <button onclick="toggleTaskForm({{ group.id }})">+</button>
+        </div>
+
+        <!-- Форма створення задачі, яка з'являється при натисканні на "плюсик" -->
+        <div id="task-form-{{ group.id }}" style="display: none;">
+            <form method="post" action="{% url 'tasks:create-task' group.id %}">
+                {% csrf_token %}
+                <input type="text" id="task-status" name="status" placeholder="Статус" required>
+                <input type="text" id="task-title" name="title" placeholder="Назва" required>
+                <input type="text" id="task-priority" name="priority" placeholder="Пріоритет" required>
+                <br>
+                <label for="task-description">Опис:</label>
+                <textarea id="task-description" name="description" required></textarea>
+                <br>
+                <button type="submit">Зберегти</button>
+                <button type="button" onclick="toggleTaskForm({{ groupid }})">Скасувати</button>
+            </form>
+        </div>
+    </div>
+
+    <ol>
+        <div>
+        {% for task in group.tasks.all %}
+        <li>
+            <div>
+                <span>{{ task.status }}</span>
+                <a href="{% url 'tasks:task-detail' task.pk %}">{{ task.title }}</a>
+                <span>| {{ task.priority }} |</span>
+            </div>
+            {{ task.description }} - {{ task.creator }}
+        </li>
+        {% empty %}
+        <li>Завдань не знайдено.</li>
+        {% endfor %}
+        </div>
+    </ol>
+    {% endfor %}
+
+</div>
+
+<script>
+    function toggleTaskForm(groupId) {
+        const form = document.getElementById(`task-form-${groupId}`);
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+</script>
+{% endblock %}
