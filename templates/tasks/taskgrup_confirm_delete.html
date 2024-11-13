@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Видалити групу "{{ object.title }}"?</h2>
+<p>Ви впевнені, що хочете видалити цю групу та всі її завдання?</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Видалити</button>
+    <a href="{% url 'tasks:task-list' %}">Скасувати</a>
+</form>
+{% endblock %}

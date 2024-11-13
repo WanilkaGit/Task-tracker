@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from tasks import models
 from django.views.generic import ListView, DetailView, CreateView, View, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -12,8 +12,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 
-task_group = models.TaskGroup.objects.create(title="Without Group", description="Tasks that aren't have group")
-task_group.save()
+# task_group = models.TaskGroup.objects.create(title="Without Group", description="Tasks that aren't have group")
+# task_group.save()
 
 
 class TaskListView(ListView):
@@ -87,6 +87,20 @@ class TaskGroupCreateView(LoginRequiredMixin, View):
         task_group = models.TaskGroup.objects.create(title=title, description=description)
         task_group.save()
         return redirect("tasks:task-list")
+
+class TogglePinGroupView(View):
+    def post(self, request, group_id):
+        group = get_object_or_404(models.TaskGroup, id=group_id)
+        group.is_pinned = not group.is_pinned  # Перемикає стан закріплення
+        group.save()
+        return redirect(reverse('tasks:task-list'))
+
+
+class DeleteSelectedGroupsView(View):
+    def post(self, request):
+        selected_groups = request.POST.getlist('selected_groups')
+        models.TaskGroup.objects.filter(id__in=selected_groups).delete()
+        return redirect(reverse_lazy('tasks:task-list'))
 
 
 class TaskCompleteView(LoginRequiredMixin, UserIsOwnerMixin, View):

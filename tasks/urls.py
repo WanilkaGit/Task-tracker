@@ -14,9 +14,11 @@ urlpatterns = [
     path("login/", views.CustomLoginView.as_view(), name="login"),
     path("logout/", views.CustomLogoutView.as_view(), name="logout"),
     path("register/", views.RegisterView.as_view(), name="register"),
-    path('taskgroup/add/', views.TaskGroupCreateView.as_view(), name='taskgroup-add'),
+    path('taskgroup/add/', views.TaskGroupCreateView.as_view(), name='group-create'),
     path('group/<int:group_id>/tasks/', views.TaskListView.as_view(), name='task-list'),
-path('group/<int:group_id>/tasks/create/', views.TaskCreateView.as_view(), name='create-task'),
+    path('group/<int:group_id>/tasks/create/', views.TaskCreateView.as_view(), name='create-task'),
+    path('group/<int:group_id>/toggle-pin/', views.TogglePinGroupView.as_view(), name='toggle-pin-group'),
+    path('delete-selected-groups/', views.DeleteSelectedGroupsView.as_view(), name='delete-selected-groups'),  # URL для видалення,
 ]
 
 app_name = "tasks"

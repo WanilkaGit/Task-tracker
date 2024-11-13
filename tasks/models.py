@@ -48,6 +48,7 @@ class TaskGroup(models.Model):
     title = models.CharField(max_length=255,null=False)
     description = models.TextField(max_length=255)
     tasks = models.ManyToManyField(Task, related_name="group")
+    is_pinned = models.BooleanField(default=False, null=True, blank=True)
 
     def __str__(self):
         return self.title

@@ -1,60 +1,189 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% csrf_token %}
-<div>
+<div style="position: relative;">
     <h2>Список завдань</h2>
-    <a href="{% url 'tasks:task-create' %}">Додати завдання</a>
 
-    {% for group in groups %}
-    <div>
-        <div>
-            <p>{{ group.title }}</p>
-            <!-- Плюсик для додавання задачі до групи -->
-            <button onclick="toggleTaskForm({{ group.id }})">+</button>
-        </div>
+    <!-- Кнопка для додавання нової групи -->
+    <button onclick="toggleGroupForm()" style="position: absolute; top: 10px; right: 10px;">+</button>
+    
+    <!-- Кнопка для видалення обраних груп -->
+    <button onclick="toggleDeleteMode()" style="position: absolute; top: 50px; right: 10px;">-</button>
 
-        <!-- Форма створення задачі, яка з'являється при натисканні на "плюсик" -->
-        <div id="task-form-{{ group.id }}" style="display: none;">
-            <form method="post" action="{% url 'tasks:create-task' group.id %}">
-                {% csrf_token %}
-                <input type="text" id="task-status" name="status" placeholder="Статус" required>
-                <input type="text" id="task-title" name="title" placeholder="Назва" required>
-                <input type="text" id="task-priority" name="priority" placeholder="Пріоритет" required>
-                <br>
-                <label for="task-description">Опис:</label>
-                <textarea id="task-description" name="description" required></textarea>
-                <br>
-                <button type="submit">Зберегти</button>
-                <button type="button" onclick="toggleTaskForm({{ groupid }})">Скасувати</button>
-            </form>
-        </div>
+    <!-- Форма створення групи -->
+    <div id="group-form" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 20px;">
+        <h3>Додати нову групу</h3>
+        <form method="post" action="{% url 'tasks:group-create' %}">
+            {% csrf_token %}
+            <label for="group-title">Назва:</label>
+            <input type="text" id="group-title" name="group-title" required>
+            <br>
+            <label for="group-description">Опис:</label>
+            <textarea id="group-description" name="group-description" required></textarea>
+            <br>
+            <button type="submit">Зберегти</button>
+            <button type="button" onclick="toggleGroupForm()">Скасувати</button>
+        </form>
     </div>
 
-    <ol>
-        <div>
-        {% for task in group.tasks.all %}
-        <li>
-            <div>
-                <span>{{ task.status }}</span>
-                <a href="{% url 'tasks:task-detail' task.pk %}">{{ task.title }}</a>
-                <span>| {{ task.priority }} |</span>
+    <!-- Форма для видалення вибраних груп -->
+    <form id="delete-form" method="post" action="{% url 'tasks:delete-selected-groups' %}" style="display: none; margin-top: 20px;">
+        {% csrf_token %}
+        <h3>Виберіть групи для видалення:</h3>
+        {% for group in groups %}
+            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                <input type="checkbox" name="selected_groups" value="{{ group.id }}" class="delete-checkbox" style="margin-right: 10px;">
+                <span>{{ group.title }}</span>
             </div>
-            {{ task.description }} - {{ task.creator }}
-        </li>
-        {% empty %}
-        <li>Завдань не знайдено.</li>
         {% endfor %}
-        </div>
-    </ol>
+        <button type="submit" style="margin-top: 10px; color: red;">Видалити вибрані групи</button>
+        <button type="button" onclick="toggleDeleteMode()">Скасувати</button>
+    </form>
+
+    <!-- Список закріплених груп -->
+    <h3>Закріплені групи</h3>
+    {% for group in groups %}
+        {% if group.is_pinned %}
+            <div>
+                <div style="display: flex; align-items: center;">
+                    <p style="margin: 0;">{{ group.title }}</p>
+                    <button onclick="toggleTaskForm({{ group.id }})">+</button>
+                    <!-- Кнопка для закріплення/відкріплення -->
+                    <form method="post" action="{% url 'tasks:toggle-pin-group' group.id %}">
+                        {% csrf_token %}
+                        <button type="submit">{% if group.is_pinned %}Відкріпити{% else %}Закріпити{% endif %}</button>
+                    </form>
+                </div>
+
+                <!-- Форма створення задачі для закріпленої групи -->
+                <div id="task-form-{{ group.id }}" style="display: none;">
+                    <form method="post" action="{% url 'tasks:create-task' group.id %}">
+                        {% csrf_token %}
+                        <input type="text" name="status" id="task-status" pattern="[\+\-\=\!]" placeholder="+" value="=" required onclick="toggleStatus()">
+                        <input type="text" name="title" placeholder="Назва" required>
+                        <input type="number" name="priority" id="task-priority" min="1" max="9" placeholder="0" value="5" required>
+                        <br>
+                        <label for="task-description">Опис:</label>
+                        <textarea name="description" required></textarea>
+                        <br>
+                        <button type="submit">Зберегти</button>
+                        <button type="button" onclick="toggleTaskForm({{ group.id }})">Скасувати</button>
+                    </form>
+                </div>
+
+                <ol>
+                    {% for task in group.tasks.all %}
+                        <li>
+                            <div>
+                                <span>&lt;{{ task.status }}&gt;</span>
+                                <a href="{% url 'tasks:task-detail' task.pk %}">{{ task.title }}</a>
+                                <span>| {{ task.priority }} |</span>
+                            </div>
+                            {{ task.description }} - {{ task.creator }}
+                        </li>
+                    {% empty %}
+                        <li>Завдань не знайдено.</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        {% endif %}
+    {% endfor %}
+
+    <!-- Список незакріплених груп -->
+    <h3>Інші групи</h3>
+    {% for group in groups %}
+        {% if not group.is_pinned %}
+            <div>
+                <div style="display: flex; align-items: center;">
+                    <p style="margin: 0;">{{ group.title }}</p>
+                    <button onclick="toggleTaskForm({{ group.id }})">+</button>
+                    <!-- Кнопка для закріплення/відкріплення -->
+                    <form method="post" action="{% url 'tasks:toggle-pin-group' group.id %}">
+                        {% csrf_token %}
+                        <button type="submit">{% if group.is_pinned %}Відкріпити{% else %}Закріпити{% endif %}</button>
+                    </form>
+                </div>
+
+                <!-- Форма створення задачі для незакріпленої групи -->
+                <div id="task-form-{{ group.id }}" style="display: none;">
+                    <form method="post" action="{% url 'tasks:create-task' group.id %}">
+                        {% csrf_token %}
+                        <input type="text" name="status" id="task-status" pattern="[\+\-\=\!]" placeholder="+" value="=" required onclick="toggleStatus()">
+                        <input type="text" name="title" placeholder="Назва" required>
+                        <input type="number" name="priority" id="task-priority" min="1" max="9" placeholder="0" value="5" required>
+                        <br>
+                        <label for="task-description">Опис:</label>
+                        <textarea name="description" required></textarea>
+                        <br>
+                        <button type="submit">Зберегти</button>
+                        <button type="button" onclick="toggleTaskForm({{ group.id }})">Скасувати</button>
+                    </form>
+                </div>
+
+                <ol>
+                    {% for task in group.tasks.all %}
+                        <li>
+                            <div>
+                                <span>&lt;{{ task.status }}&gt;</span>
+                                <a href="{% url 'tasks:task-detail' task.pk %}">{{ task.title }}</a>
+                                <span>| {{ task.priority }} |</span>
+                            </div>
+                            {{ task.description }} - {{ task.creator }}
+                        </li>
+                    {% empty %}
+                        <li>Завдань не знайдено.</li>
+                    {% endfor %}
+                </ol>
+            </div>
+        {% endif %}
     {% endfor %}
 
 </div>
 
 <script>
+    let statusValues = ['+', '-', '=', '!'];
+    let currentStatusIndex = 0;
+
+    function toggleStatus() {
+        const statusInput = document.getElementById('task-status');
+        currentStatusIndex = (currentStatusIndex + 1) % statusValues.length;
+        statusInput.value = statusValues[currentStatusIndex];
+    }
+
+    // Функція для обробки прокручування колеса миші
+    const priorityInput = document.getElementById('task-priority');
+    
+    priorityInput.addEventListener('wheel', function(event) {
+        let currentValue = parseInt(priorityInput.value);
+        if (event.deltaY > 0) {
+            // Прокрутка вниз - збільшуємо значення
+            if (currentValue < 9) {
+                priorityInput.value = currentValue + 1;
+            }
+        } else if (event.deltaY < 0) {
+            // Прокрутка вгору - зменшуємо значення
+            if (currentValue > 1) {
+                priorityInput.value = currentValue - 1;
+            }
+        }
+        // Забороняємо стандартне прокручування
+        event.preventDefault();
+    });
+
+    function toggleGroupForm() {
+        const form = document.getElementById('group-form');
+        form.style.display = form.style.display === "none" ? "block" : "none";
+    }
+
+    function toggleDeleteMode() {
+        const deleteForm = document.getElementById('delete-form');
+        deleteForm.style.display = deleteForm.style.display === "none" ? "block" : "none";
+    }
+
     function toggleTaskForm(groupId) {
         const form = document.getElementById(`task-form-${groupId}`);
         form.style.display = form.style.display === "none" ? "block" : "none";
     }
 </script>
+
 {% endblock %}
