@@ -5,21 +5,21 @@
     <h2>Список завдань</h2>
 
     <!-- Кнопка для додавання нової групи -->
-    <button onclick="toggleGroupForm()" style="position: absolute; top: 10px; right: 10px;">+</button>
+    <button onclick="toggleGroupForm()" class="groups_add"><span class="button_text_add">+</span></button>
     
     <!-- Кнопка для видалення обраних груп -->
-    <button onclick="toggleDeleteMode()" style="position: absolute; top: 50px; right: 10px;">-</button>
+    <button onclick="toggleDeleteMode()" class="groups_delete"><span class="button_text_delete">-</span></button>
 
     <!-- Форма створення групи -->
     <div id="group-form" style="display: none; border: 1px solid #ddd; padding: 15px; margin-top: 20px;">
         <h3>Додати нову групу</h3>
         <form method="post" action="{% url 'tasks:group-create' %}">
             {% csrf_token %}
-            <label for="group-title">Назва:</label>
-            <input type="text" id="group-title" name="group-title" required>
+            <label class="group_title" for="group-title">Назва:</label>
+            <input type="text" id="group-title" name="group-title" required class="group_title">
             <br>
-            <label for="group-description">Опис:</label>
-            <textarea id="group-description" name="group-description" required></textarea>
+            <label class="group_describe" for="group-description">Опис:</label>
+            <textarea id="group-description" name="group-description" required class="group_describe"></textarea>
             <br>
             <button type="submit">Зберегти</button>
             <button type="button" onclick="toggleGroupForm()">Скасувати</button>
@@ -103,7 +103,7 @@
         {% if not group.is_pinned %}
             <div>
                 <div style="display: flex; align-items: center;">
-                    <p style="margin: 0;">{{ group.title }}</p>
+                    <h5 style="margin: 0;">{{ group.title }}</h5>
                     <button onclick="toggleTaskForm({{ group.id }})">+</button>
                     <!-- Кнопка для закріплення/відкріплення -->
                     <form method="post" action="{% url 'tasks:toggle-pin-group' group.id %}">
@@ -132,14 +132,22 @@
                     {% for task in group.tasks.all %}
                         <li>
                             <div>
-                                <span>&lt;{{ task.status }}&gt;</span>
+                                <span class="{% if task.status == '+' %}done
+                                            {% elif task.status == '-' %}todo
+                                            {% elif task.status == '=' %}progress
+                                            {% elif task.status == '!' %}expired
+                                            {% endif %}">
+                                    <span class="angles">&lt;</span>
+                                    {{ task.status }}
+                                    <span class="angles">&gt;</span>
+                                </span>
                                 <a href="{% url 'tasks:task-detail' task.pk %}">{{ task.title }}</a>
                                 <span>| {{ task.priority }} |</span>
                             </div>
-                            {{ task.description }} - {{ task.creator }}
+                            <span class="describe">{{ task.description }}</span> - <span class="author">{{ task.creator }}</span>
                         </li>
                     {% empty %}
-                        <li>Завдань не знайдено.</li>
+                        <h6 class="no_tasks">Завдань не знайдено.</h6>
                     {% endfor %}
                 </ol>
             </div>
