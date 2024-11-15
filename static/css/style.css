@@ -1,0 +1,51 @@
+body {
+    background-color: rgb(23, 17, 49);
+}
+
+h2 {
+    color: rgb(40, 169, 255);
+}
+
+h3 {
+    color: rgb(255, 182, 56);
+}
+
+h5 {
+    color: rgb(66, 221, 118);
+}
+
+li {
+    color: rgb(255, 113, 53);
+}
+
+h6.no_tasks {
+    color: rgb(255, 113, 53);
+}
+
+span.angles {
+    color: rgb(255, 162, 0);
+}
+
+span.author {
+    color: rgb(166, 153, 219);
+}
+
+span.describe {
+    color: white;
+}
+
+span.done {
+    color: lime;
+}
+
+span.todo {
+    color: white;
+}
+
+span.progress {
+    color: white;
+}
+
+span.expired {
+    color: red;
+}

@@ -46,7 +46,7 @@
         {% if group.is_pinned %}
             <div>
                 <div style="display: flex; align-items: center;">
-                    <p style="margin: 0;">{{ group.title }}</p>
+                    <h5 style="margin: 0;">{{ group.title }}</h5>
                     <button onclick="toggleTaskForm({{ group.id }})">+</button>
                     <!-- Кнопка для закріплення/відкріплення -->
                     <form method="post" action="{% url 'tasks:toggle-pin-group' group.id %}">
@@ -75,14 +75,22 @@
                     {% for task in group.tasks.all %}
                         <li>
                             <div>
-                                <span>&lt;{{ task.status }}&gt;</span>
+                                <span class="{% if task.status == '+' %}done
+                                            {% elif task.status == '-' %}todo
+                                            {% elif task.status == '=' %}progress
+                                            {% elif task.status == '!' %}expired
+                                            {% endif %}">
+                                    <span class="angles">&lt;</span>
+                                    {{ task.status }}
+                                    <span class="angles">&gt;</span>
+                                </span>
                                 <a href="{% url 'tasks:task-detail' task.pk %}">{{ task.title }}</a>
                                 <span>| {{ task.priority }} |</span>
                             </div>
-                            {{ task.description }} - {{ task.creator }}
+                            <span class="describe">{{ task.description }}</span> - <span class="author">{{ task.creator }}</span>
                         </li>
                     {% empty %}
-                        <li>Завдань не знайдено.</li>
+                        <h6 class="no_tasks">Завдань не знайдено.</h6>
                     {% endfor %}
                 </ol>
             </div>
